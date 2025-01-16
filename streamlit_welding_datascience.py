@@ -79,7 +79,7 @@ dt_clf_l=joblib.load('dt_clf.joblib')
 
 def page1():#Project presentation
     st.title("Spot Welding resistance curve prediction")
-    st.image("/Workspace/Users/j552405@inetpsa.com/Streamlit_welding/welding_shop.jpg")
+    st.image("welding_shop.jpg")
     st.subheader("Presentation of the project", divider=True)
     st.write("**Context:** In Stellantis welding workshops, we produce from 300 to 600 cars a day. There are around 5000 welding points per car, and each minute a car is produced. Quality is carmaker main concern: Each point must be a good welding point. But in the real production life, quality drift happen. If a major quality issue is detected, new welding operation could be necessary or worst case, body car must be destroyed, in all case it raise car value production. Our project will help to identify bad welding spot among the millions of each day so as to avoid    major quality issues.")
     st.subheader("Objectives", divider=True)
