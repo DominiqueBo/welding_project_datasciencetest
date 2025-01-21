@@ -7,9 +7,11 @@ import joblib
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix,classification_report
 
+
     
-dataset = pd.read_csv('_new_test_curves_pivoted_3_test_train.csv', sep=";")
-artificial_label = pd.read_csv('_artificial_labels.csv', sep=",")
+dataset = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_new_test_curves_pivoted_3_test_train.csv', sep=";")
+#/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/
+artificial_label = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_artificial_labels.csv', sep=",")
 print(dataset.shape)
 
 dataset_labeled=pd.merge(dataset, artificial_label, on='POINT_ID', how='right')
@@ -62,24 +64,25 @@ X_test_scaled = scaler.transform(X_test)
 
 
 #page3 load model
-data_2D=joblib.load('data_2D_pca_model.joblib')
-data_2D_s=joblib.load('data_2D_s_pca_model.joblib')
-data_2D_M = joblib.load('data_2D_s_pca_model_explo.joblib')
+data_2D=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_pca_model.joblib')
+data_2D_s=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model.joblib')
+data_2D_M = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model_explo.joblib')
 
-dbscan_labels_l = joblib.load('dbscan_labels.joblib')
-Agglo_labels_l = joblib.load('Agglo_labels.joblib')
-kmeans_labels_l = joblib.load('kmeans_labels.joblib')
-lof_labels_l = joblib.load('lof_labels.joblib')
+dbscan_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dbscan_labels.joblib')
+Agglo_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Agglo_labels.joblib')
+kmeans_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/kmeans_labels.joblib')
+lof_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/lof_labels.joblib')
 
-clf_rdf_l=joblib.load('clf_rdf.joblib')
-clf_svm_l=joblib.load('clf_svm.joblib')
-knn_l=joblib.load('knn.joblib')
-dt_clf_l=joblib.load('dt_clf.joblib')
+clf_rdf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_rdf.joblib')
+clf_svm_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_svm.joblib')
+knn_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/knn.joblib')
+dt_clf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dt_clf.joblib')
 
 
 def page1():#Project presentation
+    st.set_page_config(page_title="Spot Welding resistance curve prediction", layout="wide")
     st.title("Spot Welding resistance curve prediction")
-    st.image("welding_shop.jpg")
+    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/welding_shop.jpg")
     st.subheader("Presentation of the project", divider=True)
     st.write("**Context:** In Stellantis welding workshops, we produce from 300 to 600 cars a day. There are around 5000 welding points per car, and each minute a car is produced. Quality is carmaker main concern: Each point must be a good welding point. But in the real production life, quality drift happen. If a major quality issue is detected, new welding operation could be necessary or worst case, body car must be destroyed, in all case it raise car value production. Our project will help to identify bad welding spot among the millions of each day so as to avoid    major quality issues.")
     st.subheader("Objectives", divider=True)
@@ -161,9 +164,7 @@ def page2(): #DataVizualization/preprocessing
     row_values = dataset_labeled_p.iloc[3470,7:640].values.tolist()
     row_values1 = dataset_labeled_p.iloc[300,7:640].values.tolist()
     row_values2 = dataset_labeled_p.iloc[200,7:640].values.tolist()
-    max_y=np.mean(row_values)
-
-    #plt.ylim(0, max_y*0.5)
+ 
     plt.ylim(0, 300)
     plt.plot(range(1,634),row_values)
     plt.plot(range(1,634),row_values1)
@@ -327,10 +328,79 @@ def page4():#title="Classification Models exploration"
     with col8:
         st.dataframe(pd.DataFrame(classification_report(y_test, y_pred_dt_clf, target_names=['Anomaly Defect', 'Shunt Defect', 'Gap Defect', 'Good'], output_dict=True)).transpose())
 
+def page5():#DataFrame filtering
+    
+    st.title("DataFrame filtering")
+        #zoom on specific data
+    st.subheader("zoom on sample data", divider=True)
+    col1, col2 = st.columns([3,3])
+    # Widgets de filtrage
+    with col1:
+        dataset_labeled_g=dataset_labeled_p
+        dataset_labeled_g['assesment']=dataset_labeled_g['assesment']*10
+        ass_select = ["OK", "GAP", "SHUNT", "ANOMALI"]
+        selection = st.segmented_control("Welding point status", ass_select,default="OK", selection_mode="multi")
+        # Dictionnaire de correspondance
+        status_to_value = {
+            "OK": 10,
+            "GAP": 7,
+            "SHUNT": 3,
+            "ANOMALI": 0
+        }
+
+        # Construire la liste des valeurs correspondantes
+        selected_values = [status_to_value[status] for status in selection]
+
+        current_sel = st.multiselect("CURRENT",options=sorted(dataset_labeled_g['CURRENT'].unique()),default=sorted(dataset_labeled_g['CURRENT'].unique()))
+        force_sel = st.multiselect("FORCE", options=sorted(dataset_labeled_g['FORCE'].unique()),default=sorted(dataset_labeled_g['FORCE'].unique()))
+        TH1_sel = st.multiselect("TH1",options=sorted(dataset_labeled_g['TH1'].unique()),default=sorted(dataset_labeled_g['TH1'].unique()))
+        TH2_sel = st.multiselect("TH2",options=sorted(dataset_labeled_g['TH2'].unique()),default=sorted(dataset_labeled_g['TH2'].unique()))
+        TH3_sel = st.multiselect("TH3",options=sorted(dataset_labeled_g['TH3'].unique()),default=sorted(dataset_labeled_g['TH3'].unique()))
+
+        dataset_labeled_p_filtered=dataset_labeled_p[
+                                                    (dataset_labeled_g['assesment'].isin(selected_values))&
+                                                    (dataset_labeled_g['CURRENT'].isin(current_sel))&
+                                                    (dataset_labeled_g['FORCE'].isin(force_sel))&
+                                                    (dataset_labeled_g['TH1'].isin(TH1_sel))&
+                                                    (dataset_labeled_g['TH2'].isin(TH2_sel))&
+                                                    (dataset_labeled_g['TH3'] .isin(TH3_sel))
+                                                    ]
+        
+        
+
+    with col2:
+
+        st.dataframe(dataset_labeled_p_filtered)
+
+        for i in range(len(dataset_labeled_p_filtered)):
+            if dataset_labeled_p_filtered.iloc[i,646] == 0:
+                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
+                plt.plot(range(1,634),row_values,color='red',zorder=3)
+            if dataset_labeled_p_filtered.iloc[i,646] == 7:
+                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
+                plt.plot(range(1,634),row_values,color='orange',zorder=2)
+            if dataset_labeled_p_filtered.iloc[i,646] == 3:
+                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
+                plt.plot(range(1,634),row_values,color='yellow',zorder=1)
+            if dataset_labeled_p_filtered.iloc[i,646] == 10:
+                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
+                plt.plot(range(1,634),row_values,color='green',zorder=0)
+
+        plt.xlabel('Ms')
+        plt.ylabel('Resistance')
+        plt.ylim(0, 300)
+        st.pyplot(plt)
+        plt.close()
+
+
+    
+
+
 #####################################################
 #st Menu
 page=st.navigation({"Spot Welding resistance curve prediction":[st.Page(page1,title="Project presentation"), st.Page(page2,title="DataVizualization/preprocessing"),
 st.Page(page3,title="Clusterisation exploration"),
-st.Page(page4,title="Classification Models exploration")
+st.Page(page4,title="Classification Models exploration"),
+st.Page(page5,title="Test area")
 ]})
 page.run()
