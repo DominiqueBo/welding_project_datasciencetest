@@ -9,9 +9,9 @@ from sklearn.metrics import accuracy_score, confusion_matrix,classification_repo
 
 
     
-dataset = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_new_test_curves_pivoted_3_test_train.csv', sep=";")
-#/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/
-artificial_label = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_artificial_labels.csv', sep=",")
+dataset = pd.read_csv('_new_test_curves_pivoted_3_test_train.csv', sep=";")
+#
+artificial_label = pd.read_csv('_artificial_labels.csv', sep=",")
 print(dataset.shape)
 
 dataset_labeled=pd.merge(dataset, artificial_label, on='POINT_ID', how='right')
@@ -64,25 +64,25 @@ X_test_scaled = scaler.transform(X_test)
 
 
 #page3 load model
-data_2D=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_pca_model.joblib')
-data_2D_s=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model.joblib')
-data_2D_M = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model_explo.joblib')
+data_2D=joblib.load('data_2D_pca_model.joblib')
+data_2D_s=joblib.load('data_2D_s_pca_model.joblib')
+data_2D_M = joblib.load('data_2D_s_pca_model_explo.joblib')
 
-dbscan_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dbscan_labels.joblib')
-Agglo_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Agglo_labels.joblib')
-kmeans_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/kmeans_labels.joblib')
-lof_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/lof_labels.joblib')
+dbscan_labels_l = joblib.load('dbscan_labels.joblib')
+Agglo_labels_l = joblib.load('Agglo_labels.joblib')
+kmeans_labels_l = joblib.load('kmeans_labels.joblib')
+lof_labels_l = joblib.load('lof_labels.joblib')
 
-clf_rdf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_rdf.joblib')
-clf_svm_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_svm.joblib')
-knn_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/knn.joblib')
-dt_clf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dt_clf.joblib')
+clf_rdf_l=joblib.load('clf_rdf.joblib')
+clf_svm_l=joblib.load('clf_svm.joblib')
+knn_l=joblib.load('knn.joblib')
+dt_clf_l=joblib.load('dt_clf.joblib')
 
 
 def page1():#Project presentation
     st.set_page_config(page_title="Spot Welding resistance curve prediction", layout="wide")
     st.title("Spot Welding resistance curve prediction")
-    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/welding_shop.jpg")
+    st.image("welding_shop.jpg")
     st.subheader("Presentation of the project", divider=True)
     st.write("**Context:** In Stellantis welding workshops, we produce from 300 to 600 cars a day. There are around 5000 welding points per car, and each minute a car is produced. Quality is carmaker main concern: Each point must be a good welding point. But in the real production life, quality drift happen. If a major quality issue is detected, new welding operation could be necessary or worst case, body car must be destroyed, in all case it raise car value production. Our project will help to identify bad welding spot among the millions of each day so as to avoid    major quality issues.")
     st.subheader("Objectives", divider=True)
