@@ -89,6 +89,36 @@ def page1():#Project presentation
     st.write('What are the main objectives to be achieved? Describe in a few lines.We have a dataset where welding points are not classified/labelled as good or bad.')
     st.write('1 – First objective, try several unsupervised clusterisation so as to identify the bad welding points. This first clusterisation will be validated/corrected manually by the business in order to have a relevant dataset with labels.')
     st.write('2 – Build a classification model able to identify bad and good welding points in new labeled dataset..")')
+    
+    st.subheader("Anomaly/good welding curves examples", divider=True)
+    st.write("All these curves share the same parameters: Current=8.4A, Force=2.2N, TH1=0.8mm, TH2=1.5mm, TH3=0.")
+    st.write("Among all these curves, one has not the same shape and is classified as bad welding point by the business.")
+    dataset_labeled_gb=dataset_labeled_p
+    dataset_labeled_gb['assesment']=dataset_labeled_gb['assesment']*10
+		
+    dataset_labeled_p_filtered_gb=dataset_labeled_gb[
+                                        (dataset_labeled_gb['assesment'].isin([0,10])&
+                                        (dataset_labeled_gb['CURRENT'].isin([8.4]))&
+                                        (dataset_labeled_gb['FORCE'].isin([2.2]))&
+                                        (dataset_labeled_gb['TH1'].isin([0.8]))&
+                                        (dataset_labeled_gb['TH2'].isin([1.5]))&
+                                        (dataset_labeled_gb['TH3'] .isin([0]))
+                                        )]
+    plt.figure(figsize=(4, 4))
+    for i in range(len(dataset_labeled_p_filtered_gb)):
+        if dataset_labeled_p_filtered_gb.iloc[i,646] == 0:
+            row_values = dataset_labeled_p_filtered_gb.iloc[i,7:640].values.tolist()
+            plt.plot(range(1,634),row_values,color='red',zorder=3,label='Anomaly')
+        if dataset_labeled_p_filtered_gb.iloc[i,646] == 10:
+            row_values = dataset_labeled_p_filtered_gb.iloc[i,7:640].values.tolist()
+            plt.plot(range(1,634),row_values,color='green',zorder=0,label='Goods')
+
+    plt.legend(['Anomaly','Goods'])
+    plt.xlabel('Ms')
+    plt.ylabel('Resistance')
+    plt.ylim(0, 300)
+    st.pyplot(plt)
+    plt.close()
 
 def page2(): #DataVizualization/preprocessing
     st.title("Data Presentation")
@@ -177,6 +207,7 @@ def page2(): #DataVizualization/preprocessing
 def page3(): #Data Clusterisation exploration
     st.title('Clusterisation exploration')
     st.subheader("Comparing non Scaled data vs Scaled data", divider=True)
+    st.write('The goal is to compare the 2D projection of the data before and after scaling, and identify the most relevant technic before clusterization.')
     col1, col2 = st.columns(2)
     with col1:
         #data_2D=joblib.load('/Workspace/Users/j552405@inetpsa.com/Streamlit_welding/data_2D_pca_model.joblib')
@@ -194,6 +225,7 @@ def page3(): #Data Clusterisation exploration
         plt.close()
         st.write('The scaled data is more compact, so the potential clusters are maybe not well separated.')
         st.write('So we will use non scaled data for our clusterisation attempt.')
+        
 
     with col2:
         #data_2D_s=joblib.load('/Workspace/Users/j552405@inetpsa.com/Streamlit_welding/data_2D_s_pca_model.joblib')
@@ -209,8 +241,13 @@ def page3(): #Data Clusterisation exploration
         legend1 = ax.legend( title="Legend")
         st.pyplot(plt)
         plt.close()
-
-    st.subheader("PCA axis data exploration", divider=True)
+    st.subheader("Artificial Labeling phase", divider=True)
+    st.subheader('Welding points dataset has been analysed by the business so as to label the data as anomalies or not.')
+    st.subheader('the next project steps will use thess new labels.')
+    st.subheader(' ')
+    st.subheader("2D PCA Axis projection according clusterisation models results", divider=True)
+    st.write('The goal is to compare the 2D projection models and see if clusters could isolate the bad welding points.') 
+    st.write('The models try to identify 4 clusters for these 4 categories OK (good welding points) GAP,SHUNT,ANOMALY(Bad welding points)')
     # Chargement des données
     #data_2D_M = joblib.load('/Workspace/Users/j552405@inetpsa.com/Streamlit_welding/data_2D_s_pca_model_explo.joblib')
     pca_x = st.slider("PCA X", 0, 5, 0)
@@ -223,7 +260,7 @@ def page3(): #Data Clusterisation exploration
     lgd2 = target_p
 
     # Création de la figure et des axes
-    fig, ax = plt.subplots(figsize=(6, 6))  # Utilisation d'une taille plus raisonnable
+    fig, ax = plt.subplots(figsize=(6, 6))  
 
     # Titre
     col3, col4 = st.columns([1,3])
@@ -268,6 +305,9 @@ def page3(): #Data Clusterisation exploration
         # Affichage avec Streamlit
         st.pyplot(fig)
         plt.close()
+    st.subheader("Clusterisation exploration, conclusion", divider=True)
+    st.write('Result: no clear spacial separation detected, bad points are melted with good points in all cases')
+    st.write('Next phase will be to use classification models to detect the anomalies')
 #####
 def page4():#title="Classification Models exploration"
     
@@ -328,24 +368,27 @@ def page4():#title="Classification Models exploration"
     with col8:
         st.dataframe(pd.DataFrame(classification_report(y_test, y_pred_dt_clf, target_names=['Anomaly Defect', 'Shunt Defect', 'Gap Defect', 'Good'], output_dict=True)).transpose())
 
-def page5():#DataFrame filtering
+    st.subheader("Classification Models exploration, conclusion", divider=True)
+    st.write('DecisionTree model is the most accurate to identify most bad welding points, less good points predicted as bad.')
+    st.write('Lots of bad points are not detected as bad, but the model remains relevant for the business.')
     
-    st.title("DataFrame filtering")
-        #zoom on specific data
-    st.subheader("zoom on sample data", divider=True)
+def page5():#Curves Display
+    
+    st.title("Curves Display")
+
     col1, col2 = st.columns([3,3])
     # Widgets de filtrage
     with col1:
         dataset_labeled_g=dataset_labeled_p
         dataset_labeled_g['assesment']=dataset_labeled_g['assesment']*10
-        ass_select = ["OK", "GAP", "SHUNT", "ANOMALI"]
-        selection = st.segmented_control("Welding point status", ass_select,default="OK", selection_mode="multi")
+        ass_select = ["OK", "GAP", "SHUNT", "ANOMALY"]
+        selection = st.segmented_control("Welding point status", ass_select,default=["OK","ANOMALY"], selection_mode="multi")
         # Dictionnaire de correspondance
         status_to_value = {
             "OK": 10,
             "GAP": 7,
             "SHUNT": 3,
-            "ANOMALI": 0
+            "ANOMALY": 0
         }
 
         # Construire la liste des valeurs correspondantes
@@ -369,23 +412,30 @@ def page5():#DataFrame filtering
         
 
     with col2:
-
         st.dataframe(dataset_labeled_p_filtered)
+        
+        styles = {
+            0: {'color': 'red', 'zorder': 3, 'label': 'Anomaly'},
+            7: {'color': 'orange', 'zorder': 2, 'label': 'Gap'},
+            3: {'color': 'yellow', 'zorder': 1, 'label': 'Shunt'},
+            10: {'color': 'green', 'zorder': 0, 'label': 'Good'}
+        }
+
+        plt.figure(figsize=(10, 6))  # Ajuster la taille du graphe
+
+        # Variable pour suivre les labels déjà affichés
+        labels_shown = set()
 
         for i in range(len(dataset_labeled_p_filtered)):
-            if dataset_labeled_p_filtered.iloc[i,646] == 0:
-                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
-                plt.plot(range(1,634),row_values,color='red',zorder=3)
-            if dataset_labeled_p_filtered.iloc[i,646] == 7:
-                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
-                plt.plot(range(1,634),row_values,color='orange',zorder=2)
-            if dataset_labeled_p_filtered.iloc[i,646] == 3:
-                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
-                plt.plot(range(1,634),row_values,color='yellow',zorder=1)
-            if dataset_labeled_p_filtered.iloc[i,646] == 10:
-                row_values = dataset_labeled_p_filtered.iloc[i,7:640].values.tolist()
-                plt.plot(range(1,634),row_values,color='green',zorder=0)
+            label_value = dataset_labeled_p_filtered.iloc[i, 646]
+            if label_value in styles:
+                row_values = dataset_labeled_p_filtered.iloc[i, 7:640].values.tolist()
+                style = styles[label_value]
+                label = style['label'] if style['label'] not in labels_shown else None
+                plt.plot(range(1, 634), row_values, color=style['color'], zorder=style['zorder'], label=label)
+                labels_shown.add(style['label'])
 
+        plt.legend()
         plt.xlabel('Ms')
         plt.ylabel('Resistance')
         plt.ylim(0, 300)
@@ -393,6 +443,61 @@ def page5():#DataFrame filtering
         plt.close()
 
 
+
+def page6():#Conclusion
+    st.title("Project Conclusion: Welding Quality Control with Machine Learning")
+
+    st.markdown("""
+    ### Overview
+    This project explored advanced data science techniques to detect spot welding quality issues at Stellantis Body Shops. The primary objective was to prevent costly production errors by detecting defective welding points. Several machine learning algorithms were tested for both **unsupervised clustering** and **supervised classification**, providing valuable insights into their performance.
+
+    ---
+
+    ### Algorithm Testing and Achievements
+
+    #### Unsupervised Clustering
+    - **Models Tested**: DBSCAN, Local Outlier Factor, K-Means, Agglomerative Clustering, and Autoencoders.
+    - **Best Performer**: The **Autoencoder** stood out, generating reliable artificial labels for subsequent supervised classification.
+
+    #### Supervised Classification
+    - **Algorithms Tested**: Random Forest, SVM, KNN, Decision Tree, and XGBoost.
+    - **Decision Tree Classifier** offered the best balance between **accuracy and interpretability**.
+    - **XGBoost** showed **robust performance**, particularly with reduced datasets.
+    - **Grid Search** optimization for the Decision Tree yielded no significant improvements.
+
+    ---
+
+    ### Feature Engineering
+    Feature engineering was critical for handling the high-dimensional dataset (640 features). Key steps included:
+
+    1. **Normalization** to ensure comparable data ranges.
+    2. **Cleaning**: Removal of negative values, handling missing data, and excluding irrelevant zero-resistance pauses.
+    3. **Dimensionality Reduction**: 
+    - Averaging features in groups of 10 columns to reduce dimensionality. However, this approach masked critical details, negatively impacting model performance.
+    - **Principal Component Analysis (PCA)** was applied, but it did not enhance results due to domain-specific pattern loss.
+
+    #### Why PCA Did Not Improve Performance
+    - **Loss of Domain-Specific Patterns**: Welding resistance curves contain subtle, domain-specific signals essential for defect identification. PCA’s unsupervised nature discards these.
+    - **High Feature Correlation**: Resistance measurements are highly correlated. PCA collapses these into fewer components, potentially losing important variations.
+    - **Nonlinear Relationships**: PCA assumes linear relationships, which are inadequate for capturing the complexity of welding data.
+
+    ---
+
+    ### Why Engineered Features Delivered Superior Results
+    1. **Critical Time Window**: The initial milliseconds of the welding process are crucial for revealing quality issues, as contact imperfections manifest early.
+    2. **Focused Signal Analysis**: Limiting analysis to the initial resistance curve enhances the signal-to-noise ratio by excluding irrelevant variations.
+    3. **Simplified Patterns**: Engineering features from this early segment condenses data into a more informative subset, allowing models like **XGBoost** and **Decision Trees** to focus on the most relevant details.
+
+    ---
+
+    ### Key Outcomes
+    - The project successfully automated defect detection, distinguishing good from bad welding points with high accuracy.
+    - **High-quality, well-labeled data** was a key factor. When labels accurately reflect true classes, most supervised learning algorithms perform effectively.
+    - Domain-specific variables, such as force, current, thickness, and **engineered features like contact resistance**, significantly enhanced anomaly detection.
+
+    ### Conclusion
+    This project emphasizes the importance of tailored feature engineering based on expert knowledge of the welding process. Focusing on the contact resistance in the initial phase of the welding cycle led to superior model performance, demonstrating how domain expertise and machine learning can effectively combine for robust quality control.
+    """)
     
 
 
@@ -401,6 +506,7 @@ def page5():#DataFrame filtering
 page=st.navigation({"Spot Welding resistance curve prediction":[st.Page(page1,title="Project presentation"), st.Page(page2,title="DataVizualization/preprocessing"),
 st.Page(page3,title="Clusterisation exploration"),
 st.Page(page4,title="Classification Models exploration"),
-st.Page(page5,title="Test area")
+st.Page(page5,title="Curves Display"),
+st.Page(page6,title="Conclusion")
 ]})
 page.run()
