@@ -9,10 +9,10 @@ from sklearn.metrics import accuracy_score, confusion_matrix,classification_repo
 
 
     
-dataset = pd.read_csv('_new_test_curves_pivoted_3_test_train.csv', sep=";")
-#
-artificial_label = pd.read_csv('_artificial_labels.csv', sep=",")
-print(dataset.shape)
+dataset = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_new_test_curves_pivoted_3_test_train.csv', sep=";")
+#/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/
+artificial_label = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/_artificial_labels.csv', sep=",")
+
 
 dataset_labeled=pd.merge(dataset, artificial_label, on='POINT_ID', how='right')
 
@@ -38,6 +38,13 @@ dataset_THO_id_p=dataset_labeled_p.TH_ORDER
 
 dataset_labeled_p.drop(columns=['TH_ORDER','assesment_txt','id'],inplace=True)
 
+rado_df = pd.read_csv('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/rado_df.csv', sep=",")
+rado_df['assesment_txt'] = rado_df['assesment_txt'].replace({'OK': 10, 'gap': 7, 'anomaly': 0, 'shunt': 3})
+rado_df.drop(columns=['Unnamed: 0','Unnamed: 0.1','POINT_ID','TH_ORDER','OK','gap','anomaly','shunt'],inplace=True)
+rado_df_display=rado_df
+target_rd=rado_df['assesment_txt']
+rado_df.drop(columns=['assesment_txt'],inplace=True)
+
 from sklearn import svm
 from sklearn import model_selection
 from sklearn.model_selection import train_test_split
@@ -61,28 +68,35 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
+#train set rado
+X_train_rado, X_test_rado, y_train_rado, y_test_rado = train_test_split(rado_df, target_rd, test_size=0.2, random_state=12, stratify=target_rd)
+X_train_scaled_rado = scaler.fit_transform(X_train_rado)
+X_test_scaled_rado = scaler.transform(X_test_rado)
 
 
-#page3 load model
-data_2D=joblib.load('data_2D_pca_model.joblib')
-data_2D_s=joblib.load('data_2D_s_pca_model.joblib')
-data_2D_M = joblib.load('data_2D_s_pca_model_explo.joblib')
 
-dbscan_labels_l = joblib.load('dbscan_labels.joblib')
-Agglo_labels_l = joblib.load('Agglo_labels.joblib')
-kmeans_labels_l = joblib.load('kmeans_labels.joblib')
-lof_labels_l = joblib.load('lof_labels.joblib')
+data_2D=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_pca_model.joblib')
+data_2D_s=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model.joblib')
+data_2D_M = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/data_2D_s_pca_model_explo.joblib')
 
-clf_rdf_l=joblib.load('clf_rdf.joblib')
-clf_svm_l=joblib.load('clf_svm.joblib')
-knn_l=joblib.load('knn.joblib')
-dt_clf_l=joblib.load('dt_clf.joblib')
+dbscan_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dbscan_labels.joblib')
+Agglo_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Agglo_labels.joblib')
+kmeans_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/kmeans_labels.joblib')
+lof_labels_l = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/lof_labels.joblib')
+
+clf_rdf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_rdf.joblib')
+clf_svm_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/clf_svm.joblib')
+knn_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/knn.joblib')
+dt_clf_l=joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dt_clf.joblib')
+
+dt_clf_rado = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/dt_clf_rado.joblib')
+xgb_clf_rado = joblib.load('/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/xgb_clf_rado.joblib')
 
 
 def page1():#Project presentation
     st.set_page_config(page_title="Spot Welding resistance curve prediction", layout="wide")
     st.title("Spot Welding resistance curve prediction")
-    st.image("welding_shop.jpg")
+    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/welding_shop.jpg")
     st.subheader("Presentation of the project", divider=True)
     st.write("**Context:** In Stellantis welding workshops, we produce from 300 to 600 cars a day. There are around 5000 welding points per car, and each minute a car is produced. Quality is carmaker main concern: Each point must be a good welding point. But in the real production life, quality drift happen. If a major quality issue is detected, new welding operation could be necessary or worst case, body car must be destroyed, in all case it raise car value production. Our project will help to identify bad welding spot among the millions of each day so as to avoid    major quality issues.")
     st.subheader("Objectives", divider=True)
@@ -243,6 +257,12 @@ def page3(): #Data Clusterisation exploration
         plt.close()
     st.subheader("Artificial Labeling phase", divider=True)
     st.subheader('Welding points dataset has been analysed by the business so as to label the data as anomalies or not.')
+
+    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Rado_pic0.png")
+    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Rado_pic1.png")
+    st.image("/Workspace/Users/j552405@inetpsa.com/streamlit_project_mar24_cds_int_stellantis_2/Rado_pic2.png")
+
+    
     st.subheader('the next project steps will use thess new labels.')
     st.subheader(' ')
     st.subheader("2D PCA Axis projection according clusterisation models results", divider=True)
@@ -368,8 +388,47 @@ def page4():#title="Classification Models exploration"
     with col8:
         st.dataframe(pd.DataFrame(classification_report(y_test, y_pred_dt_clf, target_names=['Anomaly Defect', 'Shunt Defect', 'Gap Defect', 'Good'], output_dict=True)).transpose())
 
+        
+    st.subheader("Welding Business propose to test classification with a new reduced and enhanced dataset.")
+    st.write("The dataset only include 2 measures point (1&10) and 4 new columns r_max, r_max_time, slope & intercept, giving another aspect of the welding curve", divider=True)
+    st.dataframe(rado_df_display.head(5))
+    st.subheader("Decision Tree Classifier with new dataset after GridSearchCSV optimization", divider=True)
+    
+    score_dt_clf_rado=(dt_clf_rado.score(X_test_scaled_rado, y_test_rado))
+    st.metric("Model Score", f"{score_dt_clf_rado:.2%}")
+    y_pred_dt_clf_rado=dt_clf_rado.predict(X_test_scaled_rado)
+    col9, col10 = st.columns([2,3])
+    with col9:
+        st.write('0=Anomaly Defect','3=Shunt Defect')
+        st.write('7=Gap Defect','10=Good')
+        st.write(pd.crosstab(y_test_rado,y_pred_dt_clf_rado,rownames=['test'],colnames=['pred']))
+    with col10:
+        st.dataframe(pd.DataFrame(classification_report(y_test_rado, y_pred_dt_clf_rado, target_names=['Anomaly Defect', 'Shunt Defect', 'Gap Defect', 'Good'], output_dict=True)).transpose())
+
+    st.subheader("XGBOOST Classifier with new dataset after GridSearchCSV optimization", divider=True)
+    # Création d'un mapping pour les classes
+    unique_classes = sorted(set(y_train_rado))
+    class_mapping = {cls: i for i, cls in enumerate(unique_classes)}
+
+    # Remappage des classes en entiers consécutifs
+    y_train_map = y_train_rado.map(class_mapping)
+    y_test_map = y_test_rado.map(class_mapping)
+
+    score_xgb_clf_rado=(xgb_clf_rado.score(X_test_scaled_rado, y_test_map))
+    st.metric("Model Score", f"{score_xgb_clf_rado:.2%}")
+    y_pred_xgb_clf_rado=xgb_clf_rado.predict(X_test_scaled_rado)
+    col11, col12 = st.columns([2,3])
+    with col11:
+        st.write('0=Anomaly Defect','1=Shunt Defect')
+        st.write('2=Gap Defect','3=Good')
+        st.write(pd.crosstab(y_test_map,y_pred_xgb_clf_rado,rownames=['test'],colnames=['pred']))
+    with col12:
+        st.dataframe(pd.DataFrame(classification_report(y_test_map, y_pred_xgb_clf_rado, target_names=['Anomaly Defect', 'Shunt Defect', 'Gap Defect', 'Good'], output_dict=True)).transpose())
+
+
+    
     st.subheader("Classification Models exploration, conclusion", divider=True)
-    st.write('DecisionTree model is the most accurate to identify most bad welding points, less good points predicted as bad.')
+    st.write('DecisionTree and XGBoost  are the best models to identify most bad welding points, less good points predicted as bad.')
     st.write('Lots of bad points are not detected as bad, but the model remains relevant for the business.')
     
 def page5():#Curves Display
@@ -463,7 +522,7 @@ def page6():#Conclusion
     - **Algorithms Tested**: Random Forest, SVM, KNN, Decision Tree, and XGBoost.
     - **Decision Tree Classifier** offered the best balance between **accuracy and interpretability**.
     - **XGBoost** showed **robust performance**, particularly with reduced datasets.
-    - **Grid Search** optimization for the Decision Tree yielded no significant improvements.
+    - **Grid Search** optimization for the Decision Tree and XGBOOST gived some improvements.
 
     ---
 
